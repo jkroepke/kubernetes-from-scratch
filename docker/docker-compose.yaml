@@ -1,0 +1,78 @@
+services:
+  traefik:
+    image: traefik:3
+    ports:
+      - "6443:6443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--entryPoints.kubernetes-api.address=:6443"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entryPoint=traefik"
+    networks:
+      - kubernetes
+  controller1:
+    image: ubuntu:24.04
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.kubernetes-api.entrypoints=kubernetes-api"
+      - "traefik.tcp.routers.kubernetes-api.tls=true"
+      - "traefik.tcp.routers.kubernetes-api.tls.passthrough=true"
+      - "traefik.tcp.services.kubernetes-api.loadbalancer.server.port=6443"
+      - "traefik.tcp.services.kubernetes-api.loadbalancer.server.tls=true"
+    networks:
+      - kubernetes
+    volumes:
+      - controller1-etc-kubernetes:/etc/kubernetes
+      - controller1-etcd:/var/lib/etcd
+      - controller1-kubelet:/var/lib/kubelet
+  controller2:
+    image: ubuntu:24.04
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.kubernetes-api.entrypoints=kubernetes-api"
+      - "traefik.tcp.routers.kubernetes-api.tls=true"
+      - "traefik.tcp.routers.kubernetes-api.tls.passthrough=true"
+      - "traefik.tcp.services.kubernetes-api.loadbalancer.server.port=6443"
+      - "traefik.tcp.services.kubernetes-api.loadbalancer.server.tls=true"
+    networks:
+      - kubernetes
+    volumes:
+      - controller2-etc-kubernetes:/etc/kubernetes
+      - controller2-etcd:/var/lib/etcd
+      - controller2-kubelet:/var/lib/kubelet
+  controller3:
+    image: ubuntu:24.04
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.kubernetes-api.entrypoints=kubernetes-api"
+      - "traefik.tcp.routers.kubernetes-api.tls=true"
+      - "traefik.tcp.routers.kubernetes-api.tls.passthrough=true"
+      - "traefik.tcp.services.kubernetes-api.loadbalancer.server.port=6443"
+      - "traefik.tcp.services.kubernetes-api.loadbalancer.server.tls=true"
+    networks:
+      - kubernetes
+    volumes:
+      - controller3-etc-kubernetes:/etc/kubernetes
+      - controller3-etcd:/var/lib/etcd
+      - controller3-kubelet:/var/lib/kubelet
+
+volumes:
+  controller1-etc-kubernetes: {}
+  controller2-etc-kubernetes: {}
+  controller3-etc-kubernetes: {}
+  controller1-kubelet: {}
+  controller2-kubelet: {}
+  controller3-kubelet: {}
+  controller1-etcd: {}
+  controller2-etcd: {}
+  controller3-etcd: {}
+
+networks:
+  kubernetes:
+    driver: bridge
