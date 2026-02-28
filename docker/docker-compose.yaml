@@ -1,7 +1,8 @@
 services:
   traefik:
-    image: traefik:3
+    image: traefik:3.6
     ports:
+      - "8080:8080"
       - "6443:6443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
@@ -17,7 +18,13 @@ services:
     networks:
       - kubernetes
   controller1:
-    image: ubuntu:24.04
+    build:
+      dockerfile: Dockerfile
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    cgroup: private
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.kubernetes-api.entrypoints=kubernetes-api"
@@ -32,7 +39,13 @@ services:
       - controller1-etcd:/var/lib/etcd
       - controller1-kubelet:/var/lib/kubelet
   controller2:
-    image: ubuntu:24.04
+    build:
+      dockerfile: Dockerfile
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    cgroup: private
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.kubernetes-api.entrypoints=kubernetes-api"
@@ -47,7 +60,13 @@ services:
       - controller2-etcd:/var/lib/etcd
       - controller2-kubelet:/var/lib/kubelet
   controller3:
-    image: ubuntu:24.04
+    build:
+      dockerfile: Dockerfile
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    cgroup: private
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.kubernetes-api.entrypoints=kubernetes-api"

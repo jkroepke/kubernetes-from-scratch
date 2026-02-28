@@ -1,0 +1,13 @@
+services:
+  lb:
+    image: traefik:v3.0
+    command:
+      - "--api.insecure=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.k8s.address=:6443"
+      - "--providers.file.filename=/etc/traefik/traefik.yml"
+      - "--log.level=INFO"
+    volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+    network_mode: "host"
